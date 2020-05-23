@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-public class coin {
+public class coin implements Serializable {
 
 	int id;
 

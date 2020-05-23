@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-public class transaction {
+public class transaction implements Serializable{
 	int transID;
 	int receiverID;
 	int senderID;
