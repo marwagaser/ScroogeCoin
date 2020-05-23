@@ -129,6 +129,7 @@ public class blockchain {
 	}
 
 	public static void sendCoin(int senderID, int receiverID, int amount, KeyPair scroogeKeyPair) throws Exception {
+	
 		user sender = users.get((senderID));
 		transaction t = new transaction(transID, receiverID, senderID, amount);
 		if (transactions.isEmpty()) {
