@@ -24,11 +24,20 @@ public class block {
 	}
 
 	public String print() throws ClassNotFoundException, IOException {
+	
 		String s = "<Block ID: " + this.blockID + ", Block Hash:" + this.hash + ", Previous Block Hash:"
 				+ this.previousBlockHash + ", Transactions: [ ";
 		for (int i = 0; i < transactions.size(); i++) {
-			transaction curr = (transaction) (transactions.get(i).getObject());
-			s += curr.print() + " ";
+			
+			if ( (transactions.get(i).getObject()) instanceof createCoinTransaction) {
+				createCoinTransaction curr = (createCoinTransaction) (transactions.get(i).getObject());
+				s += curr.print() + " ";
+			}
+			else {
+				
+				transferCoinTransaction curr = (transferCoinTransaction) (transactions.get(i).getObject());
+				s += curr.print() + " ";
+			}
 		}
 		s += "] >";
 		return s;

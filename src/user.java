@@ -5,21 +5,25 @@ import java.util.ArrayList;
 
 public class user {
 	int id;
-	ArrayList<SignedObject> coins;
-	PrivateKey PRkey;
-	PublicKey PUKey;
-	int tempcoins;
+	private PrivateKey PRkey;
+	 PublicKey PUKey;
 
 	public user(int id, PrivateKey PRKey, PublicKey PUKey) {
-		this.id = id;
-		this.coins = new ArrayList<SignedObject>();
-		this.PRkey = PRKey;
+		this.id = id;	
+		this.setPRkey(PRKey);
 		this.PUKey = PUKey;
-		this.tempcoins = 10;
 	}
 
-	public String stringify() {
-		return "<User ID: " + this.id + ", Coins: " + this.coins.size() + ">";
+	public String print() {
+		return "<User ID: " + this.id + ", Public Key: " + this.PUKey + ">";
+	}
+
+	public PrivateKey getPRkey() {
+		return PRkey;
+	}
+
+	public void setPRkey(PrivateKey pRkey) {
+		PRkey = pRkey;
 	}
 
 }
