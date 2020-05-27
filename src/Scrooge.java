@@ -10,15 +10,14 @@ import java.util.Map.Entry;
 
 public class Scrooge {
 int id;
-HashMap <SignedObject, SignedObject> signedcoins; //contains where each coin is currently
-ArrayList <SignedObject> allcoins; //an arraylist of all the 1,000 coins
+HashMap <Integer, SignedObject> signedcoins; //contains where each coin is currently
 PublicKey publicKey;
 private PrivateKey privateKey;
 HashMap <PublicKey ,  ArrayList<SignedObject>> users_coins; //contains the PU and the list of coins for each user
 
 public Scrooge (KeyPair kp) {
 	this.id = 100;      
-	this.signedcoins= new HashMap <SignedObject, SignedObject>();
+	this.signedcoins= new HashMap <Integer, SignedObject>();
 	this.users_coins= new HashMap <PublicKey ,  ArrayList<SignedObject>> ();
 	this.setPrivateKey(kp.getPrivate());
 	this.publicKey = kp.getPublic();

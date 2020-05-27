@@ -13,6 +13,7 @@ import java.security.SignedObject;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class blockchain {
 	static String lastHashPointer;
@@ -48,65 +49,76 @@ public class blockchain {
 		return signedObject;
 	}
 
-	public static void notifyScrooge(SignedObject signedTransaction, PublicKey senderPUK, Scrooge scrooge) throws Exception {
+	public static void notifyScrooge(SignedObject signedTransaction, PublicKey senderPUK, Scrooge scrooge)
+			throws Exception {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 		// VERIFY THAT THE USER SIGNED THE TRANSACTION USING THEIR PRIVATE KEY
 		boolean isVerified = scrooge.verifySignature(signedTransaction, senderPUK);
 		if (isVerified) { // if that is the case
 			if (scrooge.users_coins.get(senderPUK).size() >= 1) {// if scrooge actually has the money to pay for the
 																	// transaction
-				// Add to block
 				// check for double spending by scrooge
 
 				boolean isDoubleSpending = scrooge.isDoubleSpending(tempBlock, signedTransaction);
 				if (!isDoubleSpending) {
-					tempBlock.transactions.add(signedTransaction);
+					// check ownership
 
-					// and check if now we are 10 in the block
-					if (tempBlock.transactions.size() == 10) {
-						tempBlock.previousBlockHash = blocks.get(blocks.size() - 1).hash;
+					transferCoinTransaction tct = (transferCoinTransaction) signedTransaction.getObject();
+					SignedObject cid = tct.coin;
+					transaction tobechecked = (transaction) scrooge.signedcoins.get(((coin)cid.getObject()).id)
+							.getObject();
+					if (tobechecked.receiverPU.equals(senderPUK)) { // CHECK OWNERSHIP
 
-						byte[] hash_block = digest
-								.digest(blocks.get(blocks.size() - 1).stringify().getBytes(StandardCharsets.UTF_8)); // hash
-						// the
-						// block
-						// Convert byte[] to String
-						String hashedBlock = Base64.getEncoder().encodeToString(hash_block);
-						tempBlock.hash = hashedBlock;
-						lastHashPointer = hashedBlock;
-						blocks.add(tempBlock);
-						blockID++;
-						for (int k = 0; k < tempBlock.transactions.size(); k++) {
-							scrooge.signedcoins.put(
-									((transferCoinTransaction) tempBlock.transactions.get(k).getObject()).coin,
-									((tempBlock.transactions.get(k))));
-							// actually do the transfer
+						tempBlock.transactions.add(signedTransaction);
 
-							transferCoinTransaction currentTrans = ((transferCoinTransaction) tempBlock.transactions
-									.get(k).getObject());
-							int coinID = ((coin) currentTrans.coin.getObject()).id;
-							for (int t = 0; t < scrooge.users_coins.get(senderPUK).size(); t++) {
-								// remove the coin with the id = coinID and put it in the receiver arraylist
-								if (((coin) scrooge.users_coins.get(senderPUK).get(t).getObject()).id == coinID) {
-									// REMOVE IT AND ADD IT TO RECEIVER
-									SignedObject transfercoin = scrooge.users_coins.get(senderPUK).remove(t);
-									scrooge.users_coins.get(currentTrans.receiverPU).add(transfercoin);
-									break;
+						// and check if now we are 10 in the block
+						if (tempBlock.transactions.size() == 10) {
+							tempBlock.previousBlockHash = blocks.get(blocks.size() - 1).hash;
+
+							byte[] hash_block = digest
+									.digest(blocks.get(blocks.size() - 1).stringify().getBytes(StandardCharsets.UTF_8)); // hash
+							// the
+							// block
+							// Convert byte[] to String
+							String hashedBlock = Base64.getEncoder().encodeToString(hash_block);
+							tempBlock.hash = hashedBlock;
+							lastHashPointer = hashedBlock;
+							blocks.add(tempBlock);
+							blockID++;
+							for (int k = 0; k < tempBlock.transactions.size(); k++) {
+								scrooge.signedcoins.replace(
+										((coin)((transferCoinTransaction)tempBlock.transactions.get(k).getObject()).coin.getObject()).id,
+										((tempBlock.transactions.get(k))));
+								// actually do the transfer
+
+								transferCoinTransaction currentTrans = ((transferCoinTransaction) tempBlock.transactions
+										.get(k).getObject());
+								int coinID = ((coin) currentTrans.coin.getObject()).id;
+								for (int t = 0; t < scrooge.users_coins.get(senderPUK).size(); t++) {
+									// remove the coin with the id = coinID and put it in the receiver arraylist
+									if (((coin) scrooge.users_coins.get(senderPUK).get(t).getObject()).id == coinID) {
+										// REMOVE IT AND ADD IT TO RECEIVER
+										SignedObject transfercoin = scrooge.users_coins.get(senderPUK).remove(t);
+										scrooge.users_coins.get(currentTrans.receiverPU).add(transfercoin);
+										break;
+									}
+									//
 								}
-								//
-							}
 
+							}
+							// actual deduction
+							tempBlock = new block(blockID);
+							// create a new block
 						}
-						// actual deduction
-						tempBlock = new block(blockID);
-						// create a new block
 					}
+
 				}
 
 			} else {
 				System.out.println("You do not have enough money");
 			}
-		} else {
+		} 
+	else {
 			System.out.println("ATTACK");
 		}
 	}
@@ -117,11 +129,12 @@ public class blockchain {
 		transID = 0;
 		blocks.clear();
 		all_transactions.clear();
+		ArrayList <SignedObject> all_coins =  new ArrayList <SignedObject>();
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
 		// create blocks for the blockchain and publish them after 10 transactions
 		int coinID = 0;
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 100; i++) { // changed - replace 1 by 100
 			tempBlock = new block(blockID); // create a new temp block for each user (100)
 			for (int j = 0; j < 10; j++) {
 				coin c = new coin(coinID);
@@ -138,6 +151,7 @@ public class blockchain {
 																							// coin
 
 				cct.prevTransHash = null;
+				cct.receiverPU = scrooge.publicKey;
 				byte[] hash_signed_transaction = digest.digest(cct.stringify().getBytes(StandardCharsets.UTF_8));
 				// Convert byte[] to String
 				String hashedTransaction = Base64.getEncoder().encodeToString(hash_signed_transaction);
@@ -164,7 +178,8 @@ public class blockchain {
 			String hashBlock = Base64.getEncoder().encodeToString(hash_block);
 			tempBlock.hash = hashBlock;
 			for (int k = 0; k < tempBlock.transactions.size(); k++) {
-				scrooge.signedcoins.put(((createCoinTransaction) tempBlock.transactions.get(k).getObject()).coin,
+				all_coins.add(((createCoinTransaction)tempBlock.transactions.get(k).getObject()).coin);
+				scrooge.signedcoins.put( ((coin)((createCoinTransaction)tempBlock.transactions.get(k).getObject()).coin.getObject()).id,
 						((tempBlock.transactions.get(k))));
 			}
 
@@ -172,37 +187,43 @@ public class blockchain {
 			blockID += 1;
 		}
 		tempBlock = new block(blockID);
-		ArrayList<SignedObject> coins = new ArrayList<>(scrooge.signedcoins.keySet());
-		scrooge.users_coins.put(scrooge.publicKey, coins);
+		scrooge.users_coins.put(scrooge.publicKey, all_coins);
+		System.out.println(all_coins.size());
 	}
 
 	public static void createUsers(Scrooge scrooge) throws Exception {
-		for (int i = 0; i < 2; i++) {
+
+		for (int i = 0; i < 100; i++) {
+			int index = 0;
 			KeyPair kp = getKeyPair();
 			user u = new user(i, kp.getPrivate(), kp.getPublic());
 			users.add(u); // an arraylist of users
 			scrooge.users_coins.put(u.PUKey, new ArrayList<SignedObject>());
-			SignedObject st = sign(transferCoins(scrooge.publicKey, u.PUKey, scrooge), scrooge.getPrivateKey());
-			notifyScrooge(st, scrooge.publicKey, scrooge);
+			for (int coinAmount = 0; coinAmount < 10; coinAmount++) {
+				SignedObject st = sign(transferCoins(scrooge.publicKey, u.PUKey, scrooge, index),
+						scrooge.getPrivateKey());
+				notifyScrooge(st, scrooge.publicKey, scrooge);
+				index++;
+			}
+
 		}
 
 	}
 
-	public static transaction transferCoins(PublicKey senderPU, PublicKey receiverPU, Scrooge scrooge)
+	public static transaction transferCoins(PublicKey senderPU, PublicKey receiverPU, Scrooge scrooge, int random)
 			throws ClassNotFoundException, IOException, NoSuchAlgorithmException {
-		int rand = 0;
-		SignedObject transfercoin = scrooge.users_coins.get(senderPU).get(rand);
+		SignedObject transfercoin = scrooge.users_coins.get(senderPU).get(random);
 		transferCoinTransaction t = new transferCoinTransaction(transID, senderPU, receiverPU, transfercoin);
-		if (scrooge.signedcoins.get(transfercoin).getObject() instanceof transferCoinTransaction) {// get the place
+		if (scrooge.signedcoins.get(((coin)(transfercoin.getObject())).id).getObject() instanceof transferCoinTransaction) {// get the place
 																									// where the current
 																									// coin exists
-			transferCoinTransaction prevtrans = (transferCoinTransaction) scrooge.signedcoins.get(transfercoin)
+			transferCoinTransaction prevtrans = (transferCoinTransaction) scrooge.signedcoins.get(((coin)(transfercoin.getObject())).id)
 					.getObject();
 			String previousTransactionHash = prevtrans.hash;
 			t.prevTransHash = previousTransactionHash; // set the previous hash of the new transaction to that previous
 			// transaction
 		} else {
-			createCoinTransaction prevtrans = (createCoinTransaction) scrooge.signedcoins.get(transfercoin).getObject();
+			createCoinTransaction prevtrans = (createCoinTransaction) scrooge.signedcoins.get(((coin)(transfercoin.getObject())).id).getObject();
 			String previousTransactionHash = prevtrans.hash;
 			t.prevTransHash = previousTransactionHash; // set the previous hash of the new transaction to that previous
 		}
@@ -225,19 +246,28 @@ public class blockchain {
 		KeyPair scroogePair = getKeyPair();
 		Scrooge scrooge = new Scrooge(scroogePair);
 		init(scrooge);
-		System.out.println(scrooge.users_coins.size());
-/*System.out.println(scrooge.users_coins);*/
-	//  SignedObject trans = sign(transferCoins(users.get(0).PUKey, users.get(1).PUKey, scrooge),users.get(0).getPRkey());
-	//  SignedObject trans1 = sign(transferCoins(users.get(0).PUKey, users.get(5).PUKey, scrooge),users.get(0).getPRkey());
-		/*transferCoins(users.get(0).PUKey, users.get(3).PUKey, scrooge);
-		transferCoins(users.get(1).PUKey, users.get(2).PUKey, scrooge);
-		transferCoins(users.get(2).PUKey, users.get(3).PUKey, scrooge);
-		transferCoins(users.get(3).PUKey, users.get(4).PUKey, scrooge);
-		transferCoins(users.get(4).PUKey, users.get(5).PUKey, scrooge);
-		transferCoins(users.get(5).PUKey, users.get(6).PUKey, scrooge);
-		transferCoins(users.get(6).PUKey, users.get(7).PUKey, scrooge);
-		transferCoins(users.get(7).PUKey, users.get(8).PUKey, scrooge);
-		transferCoins(users.get(8).PUKey, users.get(9).PUKey, scrooge);*/
+		/*
+		 * Random rand = new Random(); int random =
+		 * rand.nextInt((scrooge.users_coins.get(senderPU).size() - 0) + 1) + 0;
+		 */
+		System.out.println(displayBlockChain());
+		
+		/* System.out.println(scrooge.users_coins); */
+		// SignedObject trans = sign(transferCoins(users.get(0).PUKey,
+		// users.get(1).PUKey, scrooge),users.get(0).getPRkey());
+		// SignedObject trans1 = sign(transferCoins(users.get(0).PUKey,
+		// users.get(5).PUKey, scrooge),users.get(0).getPRkey());
+		/*
+		 * transferCoins(users.get(0).PUKey, users.get(3).PUKey, scrooge);
+		 * transferCoins(users.get(1).PUKey, users.get(2).PUKey, scrooge);
+		 * transferCoins(users.get(2).PUKey, users.get(3).PUKey, scrooge);
+		 * transferCoins(users.get(3).PUKey, users.get(4).PUKey, scrooge);
+		 * transferCoins(users.get(4).PUKey, users.get(5).PUKey, scrooge);
+		 * transferCoins(users.get(5).PUKey, users.get(6).PUKey, scrooge);
+		 * transferCoins(users.get(6).PUKey, users.get(7).PUKey, scrooge);
+		 * transferCoins(users.get(7).PUKey, users.get(8).PUKey, scrooge);
+		 * transferCoins(users.get(8).PUKey, users.get(9).PUKey, scrooge);
+		 */
 
 	}
 }

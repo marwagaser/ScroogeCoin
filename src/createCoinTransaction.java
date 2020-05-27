@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.security.PublicKey;
 import java.security.SignedObject;
 
 public class createCoinTransaction extends transaction {
