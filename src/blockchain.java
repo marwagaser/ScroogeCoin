@@ -16,7 +16,7 @@ import java.util.LinkedList;
 import java.util.Random;
 
 public class blockchain {
-	static String lastHashPointer;
+	static SignedObject lastHashPointer;
 	static int blockID = 0;
 	static int transID = 0;
 	static block tempBlock = new block(-1);
@@ -83,7 +83,7 @@ public class blockchain {
 							// Convert byte[] to String
 							String hashedBlock = Base64.getEncoder().encodeToString(hash_block);
 							tempBlock.hash = hashedBlock;
-							lastHashPointer = hashedBlock;
+							lastHashPointer = sign(hashedBlock,scrooge.getPrivateKey());
 							blocks.add(tempBlock);
 							blockID++;
 							for (int k = 0; k < tempBlock.transactions.size(); k++) {
@@ -186,7 +186,7 @@ public class blockchain {
 				scrooge.signedcoins.put( ((coin)((createCoinTransaction)tempBlock.transactions.get(k).getObject()).coin.getObject()).id,
 						((tempBlock.transactions.get(k))));
 			}
-            lastHashPointer = hashBlock;
+            lastHashPointer = sign (hashBlock,scrooge.getPrivateKey());
 			blocks.add(tempBlock);
 			blockID += 1;
 		}
