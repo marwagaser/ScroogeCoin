@@ -55,6 +55,7 @@ public class blockchain {
 		// VERIFY THAT THE USER SIGNED THE TRANSACTION USING THEIR PRIVATE KEY
 		boolean isVerified = scrooge.verifySignature(signedTransaction, senderPUK);
 		if (isVerified) { // if that is the case
+			
 			if (scrooge.users_coins.get(senderPUK).size() >= 1) {// if scrooge actually has the money to pay for the
 																	// transaction
 				// check for double spending by scrooge
@@ -111,7 +112,9 @@ public class blockchain {
 							// create a new block
 						}
 					}
-
+					else {
+						System.out.println("ownership verification failed");
+					}
 				}
 
 			} else {
@@ -177,12 +180,13 @@ public class blockchain {
 			// Convert byte[] to String
 			String hashBlock = Base64.getEncoder().encodeToString(hash_block);
 			tempBlock.hash = hashBlock;
+			
 			for (int k = 0; k < tempBlock.transactions.size(); k++) {
 				all_coins.add(((createCoinTransaction)tempBlock.transactions.get(k).getObject()).coin);
 				scrooge.signedcoins.put( ((coin)((createCoinTransaction)tempBlock.transactions.get(k).getObject()).coin.getObject()).id,
 						((tempBlock.transactions.get(k))));
 			}
-
+            lastHashPointer = hashBlock;
 			blocks.add(tempBlock);
 			blockID += 1;
 		}
@@ -250,7 +254,7 @@ public class blockchain {
 		 * Random rand = new Random(); int random =
 		 * rand.nextInt((scrooge.users_coins.get(senderPU).size() - 0) + 1) + 0;
 		 */
-		System.out.println(displayBlockChain());
+		//System.out.println(displayBlockChain());
 		
 		/* System.out.println(scrooge.users_coins); */
 		// SignedObject trans = sign(transferCoins(users.get(0).PUKey,
