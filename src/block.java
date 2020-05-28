@@ -17,24 +17,41 @@ public class block {
 		String s = "<Block ID: " + this.blockID + ", Previous Block Hash:" + this.previousBlockHash
 				+ ", Transactions: [ ";
 		for (int i = 0; i < transactions.size(); i++) {
-			s += transactions.get(i)+ " ";
+			s += transactions.get(i) + " ";
 		}
 		s += "] >";
 		return s;
 	}
 
 	public String print() throws ClassNotFoundException, IOException {
-	
-		String s = "<Block ID: " + this.blockID + ", Block Hash:" + this.hash + ", Previous Block Hash:"
-				+ this.previousBlockHash + ", Transactions: [ ";
+		String s = "<Block ID: " + this.blockID + ", Previous Block Hash:" + this.previousBlockHash + ", Block Hash:"
+				+ this.hash + ", Transactions: [ ";
 		for (int i = 0; i < transactions.size(); i++) {
-			
-			if ( (transactions.get(i).getObject()) instanceof createCoinTransaction) {
+
+			if ((transactions.get(i).getObject()) instanceof createCoinTransaction) {
+				System.out.println("cc trans");
 				createCoinTransaction curr = (createCoinTransaction) (transactions.get(i).getObject());
 				s += curr.print() + " ";
+			} else {
+
+				transferCoinTransaction curr = (transferCoinTransaction) (transactions.get(i).getObject());
+				s += curr.print() + " ";
 			}
-			else {
-				
+		}
+		s += "] >";
+		return s;
+	}
+	
+	public String printunderConstruction() throws ClassNotFoundException, IOException {
+		String s = "<Block Under Construction ID: " + this.blockID + ", Transactions: [ ";
+		for (int i = 0; i < transactions.size(); i++) {
+
+			if ((transactions.get(i).getObject()) instanceof createCoinTransaction) {
+				System.out.println("cc trans");
+				createCoinTransaction curr = (createCoinTransaction) (transactions.get(i).getObject());
+				s += curr.print() + " ";
+			} else {
+
 				transferCoinTransaction curr = (transferCoinTransaction) (transactions.get(i).getObject());
 				s += curr.print() + " ";
 			}
