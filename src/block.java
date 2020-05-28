@@ -56,7 +56,7 @@ public class block {
 				s += curr.print() + " ";
 			}
 		}
-		s += "] >";
+		s += "]>" +"\n";
 		return s;
 	}
 }

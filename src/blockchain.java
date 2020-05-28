@@ -26,31 +26,38 @@ public class blockchain {
 	static ArrayList<user> users = new ArrayList<user>();
 
 	public static String displayBlockChain() throws ClassNotFoundException, IOException {
-		System.out.println(
-				"----------------------------------------------------------------------------------------------------------BLOCKCHAIN----------------------------------------------------------------------------------------------------------");
-		String s = "";
+		String s = "----------------------------------------------------------------------------------------------------------BLOCKCHAIN----------------------------------------------------------------------------------------------------------"
+				+ "\n";
+		s += "";
 
 		for (int i = 200; i < blocks.size(); i++) {
 			s += blocks.get(i).print() + "\n";
 		}
+		s += "----------------------------------------------------------------------------------------------------------END BLOCKCHAIN----------------------------------------------------------------------------------------------------------"
+				+ "\n";
 		return s;
 	}
 
 	public static String initPrint(Scrooge scrooge) {
-		String s = "================================================================" + "\n";
+		String s = "----------------------------------------------------------------------------------------------------------Users and Coins----------------------------------------------------------------------------------------------------------"
+				+ "\n";
 		s += "Users' Public Keys and Coins:" + "\n";
 		for (Entry<PublicKey, ArrayList<SignedObject>> me : scrooge.users_coins.entrySet()) {
 			if (!me.getKey().equals(scrooge.publicKey)) {
 				s += "User Public Key: " + me.getKey() + " & Coins: " + me.getValue().size() + "\n";
 			}
 		}
-		s += "================================================================";
+		s += "---------------------------------------------------------------------------------------------------------- END Users and Coins----------------------------------------------------------------------------------------------------------"
+				+ "\n";
 		return s;
 	}
 
 	public static String blockUnderConstruction(block temp) throws ClassNotFoundException, IOException {
-		String s = "";
-		s = temp.printunderConstruction();
+		String s = "----------------------------------------------------------------------------------------------------------Block Under Construction----------------------------------------------------------------------------------------------------------"
+				+ "\n";
+		s += temp.printunderConstruction();
+		s += "----------------------------------------------------------------------------------------------------------END Block Under Construction----------------------------------------------------------------------------------------------------------"
+				+ "\n";
 		return s;
 	}
 
@@ -247,7 +254,7 @@ public class blockchain {
 
 	public static transferCoinTransaction transferCoins(PublicKey senderPU, PublicKey receiverPU, Scrooge scrooge,
 			int random) throws ClassNotFoundException, IOException, NoSuchAlgorithmException {
-	
+
 		SignedObject transfercoin = scrooge.users_coins.get(senderPU).get(random);
 		transferCoinTransaction t = new transferCoinTransaction(transID, senderPU, receiverPU, transfercoin);
 		if (scrooge.signedcoins.get(((coin) (transfercoin.getObject())).id)
@@ -287,14 +294,14 @@ public class blockchain {
 		Scrooge scrooge = new Scrooge(scroogePair);
 		init(scrooge);
 		String f = initPrint(scrooge);
-		// System.out.println(f);
+		System.out.println(f);
 		int i = 0;
 		/*
 		 * for (Entry<Integer, SignedObject> me : scrooge.signedcoins.entrySet()) {
 		 * System.out.println(me.getKey()+" "+me.getValue()); }
 		 */
-		while (blocks.size() < 201) {
-			
+		while (true) {
+
 			PublicKey sender;
 			PublicKey receiver;
 			Random rand = new Random();
@@ -313,9 +320,6 @@ public class blockchain {
 			notifyScrooge(signedTransaction, sender, scrooge);
 			i++;
 		}
-
-		System.out.println(i);
-	
 
 	}
 }
