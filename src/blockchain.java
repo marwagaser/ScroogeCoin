@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -16,7 +15,6 @@ import java.util.Base64;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.Scanner;
 
 public class blockchain {
 	static SignedObject lastHashPointer;
@@ -249,6 +247,7 @@ public class blockchain {
 
 	public static transferCoinTransaction transferCoins(PublicKey senderPU, PublicKey receiverPU, Scrooge scrooge,
 			int random) throws ClassNotFoundException, IOException, NoSuchAlgorithmException {
+	
 		SignedObject transfercoin = scrooge.users_coins.get(senderPU).get(random);
 		transferCoinTransaction t = new transferCoinTransaction(transID, senderPU, receiverPU, transfercoin);
 		if (scrooge.signedcoins.get(((coin) (transfercoin.getObject())).id)
@@ -283,7 +282,7 @@ public class blockchain {
 	}
 
 	public static void main(String[] args) throws Exception {
-
+		new GUI();
 		KeyPair scroogePair = getKeyPair();
 		Scrooge scrooge = new Scrooge(scroogePair);
 		init(scrooge);
@@ -314,10 +313,7 @@ public class blockchain {
 			notifyScrooge(signedTransaction, sender, scrooge);
 			i++;
 		}
-		if(new Scanner(new InputStreamReader(System.in)).nextLine().length()>0)
-	    {
-	        System.exit(0);
-	    }
+
 		System.out.println(i);
 	
 
