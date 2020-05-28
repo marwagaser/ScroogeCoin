@@ -97,7 +97,7 @@ public class blockchain {
 				SignedObject cid = tct.coin;
 				transaction tobechecked = (transaction) scrooge.signedcoins.get(((coin) cid.getObject()).id)
 						.getObject();
-				// System.out.println(((coin) cid.getObject()).id);
+			
 				if (tobechecked.receiverPU.equals(senderPUK)) { // CHECK OWNERSHIP
 					boolean isDoubleSpending = scrooge.isDoubleSpending(tempBlock, signedTransaction);
 					if (!isDoubleSpending) {
@@ -105,7 +105,19 @@ public class blockchain {
 						tempBlock.transactions.add(signedTransaction);
 						if (blocks.size() >= 200) {
 							String blockUnderConstruction = blockUnderConstruction(tempBlock);
-							System.out.println(blockUnderConstruction);
+							try {
+								
+								PrintStream out = new PrintStream(
+								        new FileOutputStream("output.txt", true), true);
+								System.setOut(out);
+								System.out.println(blockUnderConstruction);
+								out.print(blockUnderConstruction);
+							
+							}
+							catch(IOException e){
+								   System.out.println("Error during reading/writing");
+							}
+							
 						}
 						// and check if now we are 10 in the block
 						if (tempBlock.transactions.size() == 10) {
@@ -123,9 +135,20 @@ public class blockchain {
 
 							if (blocks.size() > 200) {
 								String blockchain = displayBlockChain();
-								System.out.println(blockchain);
+								try {
+									
+									PrintStream out = new PrintStream(
+									        new FileOutputStream("output.txt", true), true);
+									System.setOut(out);
+									System.out.println(blockchain);
+									out.print(blockchain);
+								
+								}
+								catch(IOException e){
+									   System.out.println("Error during reading/writing");
+								}
+								
 							}
-
 							blockID++;
 							for (int k = 0; k < tempBlock.transactions.size(); k++) {
 								scrooge.signedcoins
@@ -289,20 +312,31 @@ public class blockchain {
 		createCoins(scrooge);
 		createUsers(scrooge);
 		String f = initPrint(scrooge);
-		System.out.println(f);
+	try {
+			
+			PrintStream out = new PrintStream(
+			        new FileOutputStream("blockchain_result.txt", true), true);
+			System.setOut(out);
+			out.print(f);
+			out.close();
+		
+		}
+		catch(IOException e){
+			   System.out.println("Error during reading/writing");
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
-/*		new GUI();
+		new GUI();
 		KeyPair scroogePair = getKeyPair();
 		Scrooge scrooge = new Scrooge(scroogePair);
-		init(scrooge);*/
+		init(scrooge);
 		
-		/*
-		 * for (Entry<Integer, SignedObject> me : scrooge.signedcoins.entrySet()) {
-		 * System.out.println(me.getKey()+" "+me.getValue()); }
-		 */
-/*		while (true) {
+		
+/*		  for (Entry<Integer, SignedObject> me : scrooge.signedcoins.entrySet()) {
+		  System.out.println(me.getKey()+" "+me.getValue()); }*/
+		 
+		while (true) {
 
 			PublicKey sender;
 			PublicKey receiver;
@@ -320,18 +354,8 @@ public class blockchain {
 			transferCoinTransaction x = transferCoins(sender, receiver, scrooge, chosenCoin);
 			SignedObject signedTransaction = sign(x, users.get(senderIndex).getPRkey());
 			notifyScrooge(signedTransaction, sender, scrooge);
-		}*/
-		try {
-			
-			PrintStream out = new PrintStream(
-			        new FileOutputStream("output.txt", true), true);
-			System.setOut(out);
-			out.print("your output");
-		
 		}
-		catch(IOException e){
-			   System.out.println("Error during reading/writing");
-		}
+	
 		
 	}
 }
