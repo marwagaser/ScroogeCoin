@@ -1,4 +1,6 @@
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -286,21 +288,21 @@ public class blockchain {
 	public static void init(Scrooge scrooge) throws Exception {
 		createCoins(scrooge);
 		createUsers(scrooge);
+		String f = initPrint(scrooge);
+		System.out.println(f);
 	}
 
 	public static void main(String[] args) throws Exception {
-		new GUI();
+/*		new GUI();
 		KeyPair scroogePair = getKeyPair();
 		Scrooge scrooge = new Scrooge(scroogePair);
-		init(scrooge);
-		String f = initPrint(scrooge);
-		System.out.println(f);
-		int i = 0;
+		init(scrooge);*/
+		
 		/*
 		 * for (Entry<Integer, SignedObject> me : scrooge.signedcoins.entrySet()) {
 		 * System.out.println(me.getKey()+" "+me.getValue()); }
 		 */
-		while (true) {
+/*		while (true) {
 
 			PublicKey sender;
 			PublicKey receiver;
@@ -318,8 +320,18 @@ public class blockchain {
 			transferCoinTransaction x = transferCoins(sender, receiver, scrooge, chosenCoin);
 			SignedObject signedTransaction = sign(x, users.get(senderIndex).getPRkey());
 			notifyScrooge(signedTransaction, sender, scrooge);
-			i++;
+		}*/
+		try {
+			
+			PrintStream out = new PrintStream(
+			        new FileOutputStream("output.txt", true), true);
+			System.setOut(out);
+			out.print("your output");
+		
 		}
-
+		catch(IOException e){
+			   System.out.println("Error during reading/writing");
+		}
+		
 	}
 }
