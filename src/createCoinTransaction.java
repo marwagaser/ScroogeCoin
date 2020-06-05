@@ -4,8 +4,10 @@ import java.security.SignedObject;
 
 public class createCoinTransaction extends transaction {
 
-	public createCoinTransaction(int transID, SignedObject coin) {
+	public createCoinTransaction(int transID, SignedObject coin,PublicKey receiverPU) {
 		super(transID, coin);
+		this.senderPU = null;
+		this.receiverPU =receiverPU;
 		// TODO Auto-generated constructor stub
 	}
 

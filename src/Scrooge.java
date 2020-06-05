@@ -23,7 +23,7 @@ public Scrooge (KeyPair kp) {
 	this.publicKey = kp.getPublic();
 }
 public boolean verifySignature(SignedObject message, PublicKey PUK) throws Exception {
-	Signature PUsignature = Signature.getInstance("DSA"); // create signature object
+	Signature PUsignature = Signature.getInstance("SHA1withRSA"); // create signature object
 	boolean isVerified = message.verify(PUK, PUsignature);
 	return isVerified;
 }
@@ -46,12 +46,9 @@ public boolean isDoubleSpending(block b, SignedObject signedtrans) throws ClassN
 public String print() {
 	String s = "";
 	 for (Entry<PublicKey, ArrayList<SignedObject>> hmapElement : users_coins.entrySet()) { 
-         PublicKey key = (PublicKey)hmapElement.getKey(); 
-
-         // Add some bonus marks 
-         // to all the students and print it 
+         //PublicKey key = (PublicKey) hmapElement.getKey(); 
          int value = ((int)hmapElement.getValue().size()); 
-       s+= "<Public Key: "+key+ ", Coins Owned: "+value+">" +"\n";
+       s+= "<Public Key: "+hmapElement.getKey()+ ", Coins Owned: "+value+">" +"\n";
      }
 	 
 	 return s;

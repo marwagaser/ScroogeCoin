@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -12,6 +14,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignedObject;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedList;
@@ -33,7 +36,7 @@ public class blockchain {
 		s += "";
 
 		for (int i = 200; i < blocks.size(); i++) {
-			s += blocks.get(i).print() + "\n";
+			s += blocks.get(i).blockchain_member_print() + "\n";
 		}
 		s += "----------------------------------------------------------------------------------------------------------END BLOCKCHAIN----------------------------------------------------------------------------------------------------------"
 				+ "\n";
@@ -68,37 +71,43 @@ public class blockchain {
 	}
 
 	public static KeyPair getKeyPair() throws Exception {
-		KeyPairGenerator keypairgenerator = KeyPairGenerator.getInstance("DSA"); // use DSA to generate PU-PR key pair
+		KeyPairGenerator keypairgenerator = KeyPairGenerator.getInstance("RSA"); // use DSA to generate PU-PR key pair
 		keypairgenerator.initialize(1024, new SecureRandom());
 		KeyPair private_public_key_pair = keypairgenerator.generateKeyPair();
 		return private_public_key_pair;
 	}
 
 	public static SignedObject sign(Object message, PrivateKey PK) throws Exception {
-		Signature PRsignature = Signature.getInstance("DSA"); // create signature object
+		Signature PRsignature = Signature.getInstance("SHA1withRSA"); // create signature object
 		SignedObject signedObject = new SignedObject((Serializable) message, PK, PRsignature);
 		return signedObject;
 	}
 
-	public static void notifyScrooge(SignedObject signedTransaction, PublicKey senderPUK, Scrooge scrooge)
-			throws Exception {
+	public static void notifyScrooge(SignedObject signedTransaction, Scrooge scrooge) throws Exception {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		transferCoinTransaction tct = (transferCoinTransaction) signedTransaction.getObject();
+		System.out.println(tct.senderPU);
 		// VERIFY THAT THE USER SIGNED THE TRANSACTION USING THEIR PRIVATE KEY
-		boolean isVerified = scrooge.verifySignature(signedTransaction, senderPUK);
+		boolean isVerified = scrooge.verifySignature(signedTransaction, tct.senderPU);
+
 		if (isVerified) { // if that is the case
 
-			if (scrooge.users_coins.get(senderPUK).size() >= 1) {// if scrooge actually has the money to pay for the
+			if (scrooge.users_coins.get(tct.senderPU).size() >= 1) {// if scrooge actually has the money to pay for the
 																	// transaction
 				// check for double spending by scrooge
 
 				// check ownership
 
-				transferCoinTransaction tct = (transferCoinTransaction) signedTransaction.getObject();
-				SignedObject cid = tct.coin;
-				transaction tobechecked = (transaction) scrooge.signedcoins.get(((coin) cid.getObject()).id)
-						.getObject();
-			
-				if (tobechecked.receiverPU.equals(senderPUK)) { // CHECK OWNERSHIP
+				int cid = ((coin) tct.coin.getObject()).id;
+				transaction tobechecked = (transaction) scrooge.signedcoins.get(cid).getObject();
+				if (tobechecked instanceof transferCoinTransaction) {
+					tobechecked = (transferCoinTransaction) scrooge.signedcoins.get(cid).getObject();
+
+				} else {
+					tobechecked = (createCoinTransaction) scrooge.signedcoins.get(cid).getObject();
+				}
+				if (tobechecked.receiverPU.equals(tct.senderPU)) { // CHECK OWNERSHIP
+
 					boolean isDoubleSpending = scrooge.isDoubleSpending(tempBlock, signedTransaction);
 					if (!isDoubleSpending) {
 
@@ -106,18 +115,15 @@ public class blockchain {
 						if (blocks.size() >= 200) {
 							String blockUnderConstruction = blockUnderConstruction(tempBlock);
 							try {
-								
-								PrintStream out = new PrintStream(
-								        new FileOutputStream("output.txt", true), true);
+
+								PrintStream out = new PrintStream(new FileOutputStream("output.txt", true), true);
 								System.setOut(out);
-								System.out.println(blockUnderConstruction);
 								out.print(blockUnderConstruction);
-							
+
+							} catch (IOException e) {
+								System.out.println("Error during reading/writing");
 							}
-							catch(IOException e){
-								   System.out.println("Error during reading/writing");
-							}
-							
+
 						}
 						// and check if now we are 10 in the block
 						if (tempBlock.transactions.size() == 10) {
@@ -136,57 +142,61 @@ public class blockchain {
 							if (blocks.size() > 200) {
 								String blockchain = displayBlockChain();
 								try {
-									
-									PrintStream out = new PrintStream(
-									        new FileOutputStream("output.txt", true), true);
+
+									PrintStream out = new PrintStream(new FileOutputStream("output.txt", true), true);
 									System.setOut(out);
-									System.out.println(blockchain);
 									out.print(blockchain);
-								
+
+								} catch (IOException e) {
+									System.out.println("Error during reading/writing");
 								}
-								catch(IOException e){
-									   System.out.println("Error during reading/writing");
-								}
-								
+
 							}
 							blockID++;
-							for (int k = 0; k < tempBlock.transactions.size(); k++) {
-								scrooge.signedcoins
-										.replace(
-												((coin) ((transferCoinTransaction) tempBlock.transactions.get(k)
-														.getObject()).coin.getObject()).id,
-												((tempBlock.transactions.get(k))));
+							int counter = 0;
+							for (int m = 0; m < tempBlock.transactions.size(); m++) {
+								transferCoinTransaction trans_coinID = ((transferCoinTransaction) (tempBlock.transactions
+										.get(m).getObject()));
+								coin theCoin = (coin) trans_coinID.coin.getObject();
+								int coin_id = theCoin.id;
+								scrooge.signedcoins.put(coin_id, tempBlock.transactions.get(m));
 								// actually do the transfer
-
-								transferCoinTransaction currentTrans = ((transferCoinTransaction) tempBlock.transactions
-										.get(k).getObject());
-								int coinID = ((coin) currentTrans.coin.getObject()).id;
-								for (int t = 0; t < scrooge.users_coins.get(senderPUK).size(); t++) {
+								
+								for (int t = 0; t < scrooge.users_coins.get(trans_coinID.senderPU).size(); t++) {
 									// remove the coin with the id = coinID and put it in the receiver arraylist
-									if (((coin) scrooge.users_coins.get(senderPUK).get(t).getObject()).id == coinID) {
+									if (((coin) scrooge.users_coins.get(trans_coinID.senderPU).get(t)
+											.getObject()).id == coin_id) {
 										// REMOVE IT AND ADD IT TO RECEIVER
-										SignedObject transfercoin = scrooge.users_coins.get(senderPUK).remove(t);
-										scrooge.users_coins.get(currentTrans.receiverPU).add(transfercoin);
-										break;
+										SignedObject transfercoin = scrooge.users_coins.get(trans_coinID.senderPU).remove(t);
+										scrooge.users_coins.get(trans_coinID.receiverPU).add(transfercoin);
+										counter++;
 									}
-									//
 								}
+								
 
 							}
-
 							tempBlock = new block(blockID);
 
 						}
 					} else {
-						System.out.println("ownership verification failed");
+						System.out.print("DOUBLE SPENDING ATTACK: ");
+						// PRINT THE TRANSACTION
+						PrintStream out = new PrintStream(new FileOutputStream("output.txt", true), true);
+						System.setOut(out);
+						out.print(tct.print());
 					}
+				} else {
+					System.out.println("OWNERSHIP ATTACK!");
+					PrintStream out = new PrintStream(new FileOutputStream("output.txt", true), true);
+					System.setOut(out);
+					out.print(tct.print());
 				}
 
 			} else {
-				System.out.println("You do not have enough money");
+				System.out.println("BALANCE NOT ENOUGH!");
 			}
 		} else {
-			System.out.println("ATTACK");
+			System.out.println("SENDER SIGNATURE NOT VERIFIED!");
 		}
 	}
 
@@ -206,19 +216,18 @@ public class blockchain {
 			for (int j = 0; j < 10; j++) {
 				coin c = new coin(coinID);
 				SignedObject signedc = sign(c, scrooge.getPrivateKey());
-				createCoinTransaction cct = new createCoinTransaction(transID, signedc); // transaction
-																							// to
-																							// send
-																							// from
-																							// scrooge
-																							// to
-																							// user
-																							// i,
-																							// 1
-																							// coin
+				createCoinTransaction cct = new createCoinTransaction(transID, signedc, scrooge.publicKey); // transaction
+				// to
+				// send
+				// from
+				// scrooge
+				// to
+				// user
+				// i,
+				// 1
+				// coin
 
 				cct.prevTransHash = null;
-				cct.receiverPU = scrooge.publicKey;
 				byte[] hash_signed_transaction = digest.digest(cct.stringify().getBytes(StandardCharsets.UTF_8));
 				// Convert byte[] to String
 				String hashedTransaction = Base64.getEncoder().encodeToString(hash_signed_transaction);
@@ -261,15 +270,17 @@ public class blockchain {
 	public static void createUsers(Scrooge scrooge) throws Exception {
 
 		for (int i = 0; i < 100; i++) {
+
 			int index = 0;
 			KeyPair kp = getKeyPair();
 			user u = new user(i, kp.getPrivate(), kp.getPublic());
 			users.add(u); // an arraylist of users
+
 			scrooge.users_coins.put(u.PUKey, new ArrayList<SignedObject>());
 			for (int coinAmount = 0; coinAmount < 10; coinAmount++) {
-				SignedObject st = sign(transferCoins(scrooge.publicKey, u.PUKey, scrooge, index),
-						scrooge.getPrivateKey());
-				notifyScrooge(st, scrooge.publicKey, scrooge);
+				transferCoinTransaction t = transferCoins(scrooge.publicKey, u.PUKey, scrooge, index);
+				SignedObject st = sign(t, scrooge.getPrivateKey());
+				notifyScrooge(st, scrooge);
 				index++;
 			}
 
@@ -286,14 +297,14 @@ public class blockchain {
 				.getObject() instanceof transferCoinTransaction) {// get the place
 			// where the current
 			// coin exists
-			transferCoinTransaction prevtrans = (transferCoinTransaction) scrooge.signedcoins
-					.get(((coin) (transfercoin.getObject())).id).getObject();
+			transferCoinTransaction prevtrans = (transferCoinTransaction) (scrooge.signedcoins
+					.get(((coin) (transfercoin.getObject())).id).getObject());
 			String previousTransactionHash = prevtrans.hash;
 			t.prevTransHash = previousTransactionHash; // set the previous hash of the new transaction to that previous
 			// transaction
 		} else {
-			createCoinTransaction prevtrans = (createCoinTransaction) scrooge.signedcoins
-					.get(((coin) (transfercoin.getObject())).id).getObject();
+			createCoinTransaction prevtrans = (createCoinTransaction) (scrooge.signedcoins
+					.get(((coin) (transfercoin.getObject())).id).getObject());
 			String previousTransactionHash = prevtrans.hash;
 			t.prevTransHash = previousTransactionHash; // set the previous hash of the new transaction to that previous
 		}
@@ -304,6 +315,7 @@ public class blockchain {
 		String hashedTransaction = Base64.getEncoder().encodeToString(hash_signed_transaction);
 		t.hash = hashedTransaction;
 		transID += 1;
+		transaction x = (transaction) (scrooge.signedcoins.get(((coin) (transfercoin.getObject())).id).getObject());
 		return t;
 		// sign and add to the transactions array and notify scrooge
 	}
@@ -312,17 +324,15 @@ public class blockchain {
 		createCoins(scrooge);
 		createUsers(scrooge);
 		String f = initPrint(scrooge);
-	try {
-			
-			PrintStream out = new PrintStream(
-			        new FileOutputStream("blockchain_result.txt", true), true);
+		try {
+
+			PrintStream out = new PrintStream(new FileOutputStream("output.txt", true), true);
 			System.setOut(out);
 			out.print(f);
 			out.close();
-		
-		}
-		catch(IOException e){
-			   System.out.println("Error during reading/writing");
+
+		} catch (IOException e) {
+			System.out.println("Error during reading/writing");
 		}
 	}
 
@@ -331,11 +341,12 @@ public class blockchain {
 		KeyPair scroogePair = getKeyPair();
 		Scrooge scrooge = new Scrooge(scroogePair);
 		init(scrooge);
-		
-		
-/*		  for (Entry<Integer, SignedObject> me : scrooge.signedcoins.entrySet()) {
-		  System.out.println(me.getKey()+" "+me.getValue()); }*/
-		 
+
+		/*
+		 * for (Entry<Integer, SignedObject> me : scrooge.signedcoins.entrySet()) {
+		 * System.out.println(me.getKey()+" "+me.getValue()); }
+		 */
+
 		while (true) {
 
 			PublicKey sender;
@@ -350,12 +361,13 @@ public class blockchain {
 			}
 			int receiverIndex = random;
 			receiver = users.get(receiverIndex).PUKey;
-			int chosenCoin = rand.nextInt(((scrooge.users_coins.get(sender).size() - 1) - 0) + 1) + 0;
-			transferCoinTransaction x = transferCoins(sender, receiver, scrooge, chosenCoin);
-			SignedObject signedTransaction = sign(x, users.get(senderIndex).getPRkey());
-			notifyScrooge(signedTransaction, sender, scrooge);
+			if(scrooge.users_coins.get(sender).size()>=1){
+				int chosenCoin = rand.nextInt(((scrooge.users_coins.get(sender).size() - 1) - 0) + 1) + 0;
+				transferCoinTransaction x = transferCoins(sender, receiver, scrooge, chosenCoin);
+				SignedObject signedTransaction = sign(x, users.get(senderIndex).getPRkey());
+				notifyScrooge(signedTransaction, scrooge);
+			}
 		}
-	
-		
+
 	}
 }

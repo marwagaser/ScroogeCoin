@@ -23,7 +23,7 @@ public class block {
 		return s;
 	}
 
-	public String print() throws ClassNotFoundException, IOException {
+	public String print2() throws ClassNotFoundException, IOException {
 		String s = "<Block ID: " + this.blockID + ", Previous Block Hash:" + this.previousBlockHash + ", Block Hash:"
 				+ this.hash + ", Transactions: [ ";
 		for (int i = 0; i < transactions.size(); i++) {
@@ -39,6 +39,13 @@ public class block {
 			}
 		}
 		s += "] >";
+		return s;
+	}
+	
+
+	public String blockchain_member_print() throws ClassNotFoundException, IOException {
+		String s = "<Block ID: " + this.blockID + ", Previous Block Hash:" + this.previousBlockHash + ", Block Hash:"
+				+ this.hash +">";
 		return s;
 	}
 	

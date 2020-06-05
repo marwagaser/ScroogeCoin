@@ -9,10 +9,13 @@ public class transaction implements Serializable{
 	String hash;
 	SignedObject coin;
 	PublicKey receiverPU;
+	PublicKey senderPU;
 
 	public transaction(int transID,SignedObject coin) {
 		this.transID = transID;
 		this.coin = coin;
+		this.receiverPU = null;
+		this.senderPU = null;
 	}
 
 }
