@@ -3,8 +3,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -14,7 +12,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignedObject;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedList;
@@ -153,7 +150,6 @@ public class blockchain {
 
 							}
 							blockID++;
-							int counter = 0;
 							for (int m = 0; m < tempBlock.transactions.size(); m++) {
 								transferCoinTransaction trans_coinID = ((transferCoinTransaction) (tempBlock.transactions
 										.get(m).getObject()));
@@ -169,7 +165,6 @@ public class blockchain {
 										// REMOVE IT AND ADD IT TO RECEIVER
 										SignedObject transfercoin = scrooge.users_coins.get(trans_coinID.senderPU).remove(t);
 										scrooge.users_coins.get(trans_coinID.receiverPU).add(transfercoin);
-										counter++;
 									}
 								}
 								
@@ -315,7 +310,6 @@ public class blockchain {
 		String hashedTransaction = Base64.getEncoder().encodeToString(hash_signed_transaction);
 		t.hash = hashedTransaction;
 		transID += 1;
-		transaction x = (transaction) (scrooge.signedcoins.get(((coin) (transfercoin.getObject())).id).getObject());
 		return t;
 		// sign and add to the transactions array and notify scrooge
 	}

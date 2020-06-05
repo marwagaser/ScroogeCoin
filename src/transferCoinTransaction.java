@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignedObject;
 
