@@ -3,17 +3,17 @@ import java.security.SignedObject;
 import java.util.ArrayList;
 
 public class block {
-	int blockID;
-	ArrayList<SignedObject> transactions;
-	String previousBlockHash;
-	String hash;
+	int blockID; //block ID
+	ArrayList<SignedObject> transactions; //signed array list of transactions
+	String previousBlockHash; //the hash of the previous block
+	String hash; //the hash of the block
 
 	public block(int blockID) {
 		this.blockID = blockID;
 		this.transactions = new ArrayList<SignedObject>();
 	}
 
-	public String stringify() {
+/*	public String stringify() {
 		String s = "<Block ID: " + this.blockID + ", Previous Block Hash:" + this.previousBlockHash
 				+ ", Transactions: [ ";
 		for (int i = 0; i < transactions.size(); i++) {
@@ -21,21 +21,20 @@ public class block {
 		}
 		s += "] >";
 		return s;
-	}
+	}*/
 
-	public String print2() throws ClassNotFoundException, IOException {
+	public String stringify() throws ClassNotFoundException, IOException {
 		String s = "<Block ID: " + this.blockID + ", Previous Block Hash:" + this.previousBlockHash + ", Block Hash:"
 				+ this.hash + ", Transactions: [ ";
 		for (int i = 0; i < transactions.size(); i++) {
 
 			if ((transactions.get(i).getObject()) instanceof createCoinTransaction) {
-				System.out.println("cc trans");
 				createCoinTransaction curr = (createCoinTransaction) (transactions.get(i).getObject());
-				s += curr.print() + " ";
+				s += curr.stringify() + " ";
 			} else {
 
 				transferCoinTransaction curr = (transferCoinTransaction) (transactions.get(i).getObject());
-				s += curr.print() + " ";
+				s += curr.stringify() + " ";
 			}
 		}
 		s += "] >";
@@ -54,7 +53,6 @@ public class block {
 		for (int i = 0; i < transactions.size(); i++) {
 
 			if ((transactions.get(i).getObject()) instanceof createCoinTransaction) {
-				System.out.println("cc trans");
 				createCoinTransaction curr = (createCoinTransaction) (transactions.get(i).getObject());
 				s += curr.print() + " ";
 			} else {

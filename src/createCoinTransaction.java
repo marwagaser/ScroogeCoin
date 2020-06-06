@@ -11,14 +11,15 @@ public class createCoinTransaction extends transaction {
 		// TODO Auto-generated constructor stub
 	}
 
-	public String stringify() {
+	public String stringify() throws ClassNotFoundException, IOException {
+		coin coinx = (coin) this.coin.getObject();
 		return "<Transaction ID: " + this.transID + ", Previous Transaction Hash: " + this.prevTransHash
-				+ ", Signed Coin: " + this.coin + "> ";
+				+ ", Signed Coin: " + coinx.id + "> ";
 	}
 
 	public String print() throws ClassNotFoundException, IOException {
 		coin coinx = (coin) this.coin.getObject();
-		return "<Transaction ID: " + this.transID + ", Sender : Scrooge" + ", Previous Transaction Hash: "
-				+ this.prevTransHash + ", Signed Coin by Scrooge : Coin # " + coinx.id + "> ";
+		return "<Coin Creation Transaction ID: " + this.transID + ", Sender : Scrooge" + ", Previous Transaction Hash: "
+				+ this.prevTransHash  +", Transaction Hash: " + this.hash + ", Signed Coin by Scrooge : Coin # " + coinx.id + "> ";
 	}
 }

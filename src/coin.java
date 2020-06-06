@@ -2,7 +2,7 @@ import java.io.Serializable;
 
 public class coin implements Serializable {
 
-	int id;
+	int id; //coin ID
 	public coin(int id) {
 		this.id = id;
 	}

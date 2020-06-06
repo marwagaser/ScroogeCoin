@@ -14,7 +14,7 @@ public class transferCoinTransaction extends transaction {
 
 	public String stringify() throws ClassNotFoundException, IOException {
 		coin coinx = (coin) this.coin.getObject();
-		return "<Transaction ID: " + this.transID + ", Previous Transaction Hash: " + this.prevTransHash +", Transaction Hash: " + this.hash + ", Amount: 1"
+		return "<Transaction ID: " + this.transID + ", Previous Transaction Hash: " + this.prevTransHash+ ", Amount: 1"
 				+ ", Coin ID: " + coinx.id + ", Sender: " + this.senderPU + ", Receiver: " + this.receiverPU + "> ";
 	}
 
@@ -22,7 +22,5 @@ public class transferCoinTransaction extends transaction {
 		coin coinx = (coin) this.coin.getObject();
 		return "<Transaction ID: " + this.transID + ", Previous Transaction Hash: " + this.prevTransHash +", Transaction Hash: " + this.hash + "Amount: 1"
 				+ ", Coin ID: " + coinx.id + ", Sender: " + this.senderPU + ", Receiver: " + this.receiverPU + "> ";
-/*		return "<Transaction ID: " + this.transID + ", Previous Transaction Hash: " + this.prevTransHash +", Transaction Hash: " + this.hash + ", Amount: 1"
-		+ ", Coin ID: " + coinx.id +"> ";*/
 	}
 }
