@@ -21,6 +21,6 @@ public class transferCoinTransaction extends transaction {
 	public String print() throws ClassNotFoundException, IOException {
 		coin coinx = (coin) this.coin.getObject();
 		return "<Transaction ID: " + this.transID + ", Previous Transaction Hash: " + this.prevTransHash +", Transaction Hash: " + this.hash + "Amount: 1"
-				+ ", Coin ID: " + coinx.id + ", Sender: " + this.senderPU + ", Receiver: " + this.receiverPU + "> ";
+				+ ", Coin ID: " + coinx.id + ", Sender: " + this.senderPU + ", Receiver: " + this.receiverPU + ">"+"\n";
 	}
 }

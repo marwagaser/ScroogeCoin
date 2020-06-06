@@ -6,7 +6,6 @@ import java.security.Signature;
 import java.security.SignedObject;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 public class Scrooge {
  SignedObject lastHashPointer; //An object which will hold the signature of the hash of the latest block
@@ -29,6 +28,9 @@ public boolean verifySignature(SignedObject message, PublicKey PUK) throws Excep
 	return isVerified;
 }
 
+public coin createaCoin(int coinID) {//A method to create coins
+	return new coin(coinID);
+}
 public boolean isDoubleSpending(block b, SignedObject signedtrans) throws ClassNotFoundException, IOException { // A method used to check for double spending
 	transferCoinTransaction currentTrans = (transferCoinTransaction) signedtrans.getObject(); //get the transaction we want to check for the double spending in, along with the accumulator it should be added to
 	int currentID = ((coin)currentTrans.coin.getObject()).id; //get the ID of the coin in the the transaction
@@ -42,16 +44,6 @@ public boolean isDoubleSpending(block b, SignedObject signedtrans) throws ClassN
 			}
 	}
 	return false;
-}
-public String print() {
-	String s = "";
-	 for (Entry<PublicKey, ArrayList<SignedObject>> hmapElement : users_coins.entrySet()) { 
-         //PublicKey key = (PublicKey) hmapElement.getKey(); 
-         int value = ((int)hmapElement.getValue().size()); 
-       s+= "<Public Key: "+hmapElement.getKey()+ ", Coins Owned: "+value+">" +"\n";
-     }
-	 
-	 return s;
 }
 public PrivateKey getPrivateKey() {
 	return privateKey;
